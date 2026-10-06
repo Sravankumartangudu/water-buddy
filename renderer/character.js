@@ -1048,7 +1048,6 @@ class Buddy {
       img.onload = () => (this.photoImg = img);
       img.src = settings.head;
     }
-    if (!photo) this.photoImg = null;
   }
 
   // ---------- per-frame ----------

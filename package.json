@@ -1,6 +1,6 @@
 {
   "name": "water-buddy",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A menu-bar buddy that walks across your screen to remind you to drink water",
   "main": "main.js",
   "private": true,
@@ -9,7 +9,7 @@
     "demo": "env -u ELECTRON_RUN_AS_NODE electron . --demo",
     "shot": "env -u ELECTRON_RUN_AS_NODE electron tools/shot.js",
     "icons": "env -u ELECTRON_RUN_AS_NODE electron tools/icon.js",
-    "dist": "electron-builder --mac dir && rm -rf \"/Applications/Water Buddy.app\" && cp -R \"dist/mac-arm64/Water Buddy.app\" /Applications/",
+    "dist": "electron-builder --mac dir && app=\"dist/mac$([ \"$(uname -m)\" = arm64 ] && echo -arm64)/Water Buddy.app\" && test -d \"$app\" && rm -rf \"/Applications/Water Buddy.app\" && cp -R \"$app\" /Applications/",
     "package": "electron-builder --mac dmg --universal"
   },
   "devDependencies": {

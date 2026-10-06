@@ -39,8 +39,6 @@ function renderPreview() {
   const isPhoto = s.character === 'photo' && !!s.head;
   document.querySelectorAll('input[name=character]').forEach((r) => (r.checked = r.value === (isPhoto ? 'photo' : 'droppy')));
   $('char-photo').disabled = !s.head;
-  $('colors').classList.add('hidden'); // Droppy has no skin/shirt/pants to recolor
-  document.querySelectorAll('[data-color]').forEach((el) => (el.value = s.colors[el.dataset.color]));
 }
 
 function renderAll() {
@@ -64,8 +62,9 @@ async function save(patch) {
 
 // ---------- controls ----------
 
-$('plus').onclick = () => save({ log: { count: state.settings.log.count + 1 } });
-$('minus').onclick = () => save({ log: { count: state.settings.log.count - 1 } });
+// relative, so a window left open overnight can't write yesterday's count back
+$('plus').onclick = () => save({ logDelta: 1 });
+$('minus').onclick = () => save({ logDelta: -1 });
 $('pause').onclick = () => save({ paused: !state.settings.paused });
 $('now').onclick = () => window.api.remindNow();
 
@@ -88,7 +87,10 @@ $('goal').onchange = (e) => {
   else e.target.value = state.settings.dailyGoal;
 };
 $('sound').onchange = (e) => save({ sound: e.target.checked });
-$('login').onchange = (e) => save({ openAtLogin: e.target.checked });
+$('login').onchange = async (e) => {
+  await save({ openAtLogin: e.target.checked });
+  e.target.checked = await window.api.getOpenAtLogin(); // macOS may refuse
+};
 
 document.querySelectorAll('[data-mood]').forEach((b) => {
   b.onclick = () => {
@@ -106,14 +108,6 @@ document.querySelectorAll('input[name=character]').forEach((r) => {
   };
 });
 
-document.querySelectorAll('[data-color]').forEach((el) => {
-  el.oninput = () => {
-    state.settings.colors = { ...state.settings.colors, [el.dataset.color]: el.value };
-    window.Buddy.render($('preview'), state.settings);
-  };
-  el.onchange = () => save({ colors: state.settings.colors });
-});
-
 // ---------- photo cropper ----------
 
 const canvas = $('crop');
@@ -126,18 +120,28 @@ canvas.height = SIZE * dpr;
 const crop = { img: null, scale: 1, ox: 0, oy: 0, cx: 160, cy: 80, r: 40, drag: null };
 
 $('upload').onclick = () => $('file').click();
-$('file').onchange = (e) => {
-  const file = e.target.files[0];
-  e.target.value = '';
+function loadPhoto(file) {
   if (!file) return;
+  $('photo-error').classList.add('hidden');
+  const img = new Image();
+  img.onload = () => startCrop(img);
+  img.onerror = () => $('photo-error').classList.remove('hidden'); // e.g. HEIC
   const reader = new FileReader();
-  reader.onload = () => {
-    const img = new Image();
-    img.onload = () => startCrop(img);
-    img.src = reader.result;
-  };
+  reader.onload = () => (img.src = reader.result);
+  reader.onerror = img.onerror;
   reader.readAsDataURL(file);
+}
+$('file').onchange = (e) => {
+  loadPhoto(e.target.files[0]);
+  e.target.value = '';
 };
+// dropping a photo anywhere on the window crops it instead of navigating to it
+document.addEventListener('dragover', (e) => e.preventDefault());
+document.addEventListener('drop', (e) => {
+  e.preventDefault();
+  const file = [...e.dataTransfer.files].find((f) => f.type.startsWith('image/'));
+  loadPhoto(file);
+});
 
 async function startCrop(img) {
   crop.img = img;
@@ -234,20 +238,6 @@ $('radius').oninput = (e) => {
 };
 $('cancel-crop').onclick = () => $('crop-wrap').classList.add('hidden');
 
-// Average colour of a square patch given in crop-canvas coordinates; null if off the photo.
-function samplePatch(src, x, y, half) {
-  const { img, ox, oy, scale } = crop;
-  const sx = Math.round((x - half - ox) / scale);
-  const sy = Math.round((y - half - oy) / scale);
-  const size = Math.max(2, Math.round((2 * half) / scale));
-  if (sx < 0 || sy < 0 || sx + size > img.naturalWidth || sy + size > img.naturalHeight) return null;
-  const data = src.getImageData(sx, sy, size, size).data;
-  let r = 0, g = 0, b = 0;
-  for (let i = 0; i < data.length; i += 4) { r += data[i]; g += data[i + 1]; b += data[i + 2]; }
-  const n = data.length / 4;
-  return '#' + [r, g, b].map((v) => Math.round(v / n).toString(16).padStart(2, '0')).join('');
-}
-
 $('use-face').onclick = async () => {
   const { img, ox, oy, scale, cx, cy, r } = crop;
 
@@ -259,22 +249,9 @@ $('use-face').onclick = async () => {
   o.clip();
   const s = (2 * r) / scale;
   o.drawImage(img, (cx - r - ox) / scale, (cy - r - oy) / scale, s, s, 0, 0, 256, 256);
-  const head = out.toDataURL('image/png');
+  const head = out.toDataURL('image/webp', 0.85);
 
-  const full = document.createElement('canvas');
-  full.width = img.naturalWidth;
-  full.height = img.naturalHeight;
-  const f = full.getContext('2d', { willReadFrequently: true });
-  f.drawImage(img, 0, 0);
-  const colors = { ...state.settings.colors };
-  const skin = samplePatch(f, cx - r * 0.38, cy + r * 0.2, r * 0.08) || samplePatch(f, cx, cy - r * 0.35, r * 0.08);
-  const shirt = samplePatch(f, cx, cy + r * 2.0, r * 0.3);
-  const pants = samplePatch(f, cx, cy + r * 6.2, r * 0.25);
-  if (skin) colors.skin = skin;
-  if (shirt) colors.shirt = shirt;
-  if (pants) colors.pants = pants;
-
-  await save({ head, colors, character: 'photo' });
+  await save({ head, character: 'photo' });
   $('crop-wrap').classList.add('hidden');
   previewMood = 'happy dance';
   renderPreview();

@@ -40,7 +40,7 @@ You need [Node.js](https://nodejs.org) (any current LTS).
 git clone https://github.com/Sravankumartangudu/water-buddy.git
 cd water-buddy
 npm install     # first time only
-npm run dist    # builds Water Buddy.app and copies it to /Applications (Apple silicon)
+npm run dist    # builds Water Buddy.app for this Mac and copies it to /Applications
 ```
 
 To build the downloadable DMG yourself, run `npm run package`. It writes `dist/Water-Buddy-x.y.z.dmg`, a universal build
@@ -70,6 +70,8 @@ Quit Water Buddy, then delete `/Applications/Water Buddy.app`. To also remove yo
 
 The **Settings** window opens. Pick how often you want reminders, then close it. Water Buddy keeps running in the
 background.
+
+Settings opens whenever you open the app yourself. When **Open at login** starts it, it stays quietly in the menu bar.
 
 ### Menu bar
 
@@ -106,8 +108,8 @@ is out.
 | **Active hours** | Only remind between two times (overnight ranges such as 22:00–06:00 work) |
 | **Daily goal** | Glasses per day; the count resets every midnight |
 | **Sound effects** | Gulps, sniffles and the splash-dance tune |
-| **Open at login** | Starts Water Buddy when you log in |
-| **Your buddy** | Droppy, or **My photo**: upload a photo, drag and resize the circle over your face and click **Use this face** to put it on Droppy's front. The buttons under the preview play each animation. |
+| **Open at login** | Starts Water Buddy when you log in (installed app only, not `npm start`) |
+| **Your buddy** | Droppy, or **My photo**: upload a photo (or drop one onto the window), drag and resize the circle over your face and click **Use this face** to put it on Droppy's front. Use JPEG or PNG; HEIC photos from an iPhone can't be opened. The buttons under the preview play each animation. |
 
 Settings are saved to `~/Library/Application Support/water-buddy/settings.json`.
 

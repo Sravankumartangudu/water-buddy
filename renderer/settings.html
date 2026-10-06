@@ -33,8 +33,6 @@
     #crop-wrap { margin-top: 12px; }
     #crop { width: 320px; height: 320px; border-radius: 10px; background: #000; cursor: grab; touch-action: none; display: block; }
     #crop:active { cursor: grabbing; }
-    .colors label { font-size: 12.5px; }
-    input[type=color] { width: 34px; height: 26px; border: 0; padding: 0; background: none; }
     .hidden { display: none !important; }
   </style>
 </head>
@@ -113,12 +111,7 @@
           <button class="primary" id="upload">Upload photo…</button>
           <input type="file" id="file" accept="image/*" class="hidden" />
         </div>
-        <div class="row colors" id="colors" style="margin-top: 12px; gap: 12px">
-          <label><input type="color" data-color="skin" /> Skin</label>
-          <label><input type="color" data-color="shirt" /> Shirt</label>
-          <label><input type="color" data-color="pants" /> Pants</label>
-          <label><input type="color" data-color="shoes" /> Shoes</label>
-        </div>
+        <p class="muted hidden" id="photo-error">That photo couldn’t be opened. Try a JPEG or PNG.</p>
       </div>
     </div>
     <div id="crop-wrap" class="hidden">

@@ -208,6 +208,13 @@ async function onLater() {
   window.api.done();
 }
 
+// If the scene breaks, leave the screen; main counts an unanswered close as "later".
+const bail = (err) => {
+  console.error(err);
+  window.api.done();
+};
+const safely = (fn) => () => fn().catch(bail);
+
 async function main() {
   cfg = await window.api.overlayInit();
   await window.Buddy.render(host, cfg);
@@ -215,8 +222,8 @@ async function main() {
 
   bubble.addEventListener('mouseenter', () => window.api.setInteractive(true));
   bubble.addEventListener('mouseleave', () => window.api.setInteractive(false));
-  $('drink').addEventListener('click', onDrink);
-  $('later').addEventListener('click', onLater);
+  $('drink').addEventListener('click', safely(onDrink));
+  $('later').addEventListener('click', safely(onLater));
 
   setState('walking');
   const stopAt = Math.max(20, window.innerWidth / 2 - BUDDY_W / 2 - 150); // centre buddy + bubble
@@ -238,8 +245,8 @@ async function main() {
     if (!answered) setState('idle');
   }, 25000);
   setTimeout(() => { if (!answered) $('sub').textContent = 'Your body will thank you 💙'; }, 60000);
-  setTimeout(() => { if (!answered) onLater(); }, cfg.autoSnoozeMs);
-  if (cfg.demoChoice) setTimeout(cfg.demoChoice === 'drink' ? onDrink : onLater, 1800);
+  setTimeout(() => { if (!answered) safely(onLater)(); }, cfg.autoSnoozeMs);
+  if (cfg.demoChoice) setTimeout(safely(cfg.demoChoice === 'drink' ? onDrink : onLater), 1800);
 }
 
-main();
+main().catch(bail);
