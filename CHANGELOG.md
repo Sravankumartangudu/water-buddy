@@ -10,4 +10,5 @@
 - Optional photo mode: put your own face on Droppy's front.
 - Synthesized sound effects and a marimba splash-dance tune (no audio files).
 - App icon and menu-bar icon rendered from Droppy (`npm run icons`).
-- Installable as **Water Buddy.app** with `npm run dist`. It shows in the Dock only while Settings is open.
+- Downloadable universal DMG (Apple silicon and Intel) on the releases page, or build it yourself with `npm run package`.
+  `npm run dist` builds and installs **Water Buddy.app** from source. It shows in the Dock only while Settings is open.

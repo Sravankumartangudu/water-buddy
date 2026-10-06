@@ -188,7 +188,7 @@ ipcMain.on('overlay:done', () => {
 function openSettings() {
   if (settingsWin && !settingsWin.isDestroyed()) {
     settingsWin.show();
-    settingsWin.focus();
+    app.focus({ steal: true });
     return;
   }
   settingsWin = new BrowserWindow({
@@ -200,7 +200,8 @@ function openSettings() {
   });
   settingsWin.loadFile(path.join(__dirname, 'renderer', 'settings.html'));
   // menu-bar app: show Droppy in the Dock only while Settings is open
-  if (app.dock) app.dock.show().then(() => app.dock.setIcon(ICON));
+  // and bring it to the front: a menu-bar app isn't activated automatically when launched
+  if (app.dock) app.dock.show().then(() => { app.dock.setIcon(ICON); app.focus({ steal: true }); });
   settingsWin.on('closed', () => {
     settingsWin = null;
     if (app.dock) app.dock.hide();

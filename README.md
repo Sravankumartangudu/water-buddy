@@ -13,24 +13,43 @@ rubber-hose legs, walks onto your screen and asks if you've had a glass.
 
 ## Install
 
-You need a Mac (Apple silicon) and [Node.js](https://nodejs.org) (any current LTS).
+### Download (easiest)
+
+1. Download **Water-Buddy-x.y.z.dmg** from the [latest release](https://github.com/Sravankumartangudu/water-buddy/releases/latest).
+   It works on Apple silicon and Intel Macs.
+2. Open the DMG and drag **Water Buddy** into **Applications**.
+3. Open **Water Buddy** from Applications, Launchpad or Spotlight (**⌘ Space**, type *Water Buddy*).
+
+The app isn't notarized by Apple, so the first launch is blocked with a warning. To allow it once:
+
+- **macOS 15 Sequoia or later:** click **Done** on the warning, open **System Settings → Privacy & Security**, scroll
+  down and click **Open Anyway** next to Water Buddy, then confirm.
+- **macOS 14 or earlier:** right-click Water Buddy in Applications, choose **Open**, then click **Open** again.
+
+Or run this once in Terminal:
+
+```bash
+xattr -dr com.apple.quarantine "/Applications/Water Buddy.app"
+```
+
+### Build from source
+
+You need [Node.js](https://nodejs.org) (any current LTS).
 
 ```bash
 git clone https://github.com/Sravankumartangudu/water-buddy.git
 cd water-buddy
 npm install     # first time only
-npm run dist    # builds Water Buddy.app and copies it to /Applications
+npm run dist    # builds Water Buddy.app and copies it to /Applications (Apple silicon)
 ```
 
-Then open **Water Buddy** like any other app: press **⌘ Space** and type *Water Buddy*, or find it in Launchpad or
-**Finder → Applications**.
-
-> The app isn't code-signed. If macOS says it can't be opened, right-click it in Applications, choose **Open**, and
-> confirm once.
+To build the downloadable DMG yourself, run `npm run package`. It writes `dist/Water-Buddy-x.y.z.dmg`, a universal build
+for Apple silicon and Intel.
 
 ### Update
 
-Quit Water Buddy first (menu-bar drop → **Quit Water Buddy**), then in the `water-buddy` folder run:
+Quit Water Buddy first (menu-bar drop → **Quit Water Buddy**). Then either download the new DMG and drag it into
+Applications again (choose **Replace**), or, if you built from source, run this in the `water-buddy` folder:
 
 ```bash
 git pull
@@ -38,7 +57,7 @@ npm install
 npm run dist
 ```
 
-Do the same after changing the code yourself (skip `git pull`).
+Your settings and glass count are kept.
 
 ### Uninstall
 
@@ -122,6 +141,7 @@ npm run shot -- out.png "walking@0.1|happy dance@0.3" 2   # contact sheet of bud
 npm run icons                         # regenerate the app and menu-bar icons from Droppy
 npm run icons -- "happy waving" 0.5   # ...using another pose and time
 npm run dist                          # build and install Water Buddy.app
+npm run package                       # build the universal DMG in dist/
 ```
 
 > Run these from a normal terminal. If `ELECTRON_RUN_AS_NODE` is set in your shell (VS Code's integrated terminal can

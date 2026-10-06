@@ -9,7 +9,8 @@
     "demo": "env -u ELECTRON_RUN_AS_NODE electron . --demo",
     "shot": "env -u ELECTRON_RUN_AS_NODE electron tools/shot.js",
     "icons": "env -u ELECTRON_RUN_AS_NODE electron tools/icon.js",
-    "dist": "electron-builder --mac dir && rm -rf \"/Applications/Water Buddy.app\" && cp -R \"dist/mac-arm64/Water Buddy.app\" /Applications/"
+    "dist": "electron-builder --mac dir && rm -rf \"/Applications/Water Buddy.app\" && cp -R \"dist/mac-arm64/Water Buddy.app\" /Applications/",
+    "package": "electron-builder --mac dmg --universal"
   },
   "devDependencies": {
     "electron": "^44.5.1",
@@ -25,21 +26,31 @@
       "icon": "assets/icon.icns",
       "category": "public.app-category.healthcare-fitness",
       "target": "dir",
-      "identity": null,
+      "identity": "-",
       "extendInfo": {
         "LSUIElement": true
-      }
+      },
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false
     },
     "files": [
       "main.js",
       "preload.js",
       "renderer/**",
       "assets/**",
+      {
+        "from": "node_modules/three/examples/jsm/environments",
+        "to": "node_modules/three/examples/jsm/environments"
+      },
       "!renderer/icon.*",
       "!renderer/shot.*"
     ],
     "directories": {
       "output": "dist"
+    },
+    "dmg": {
+      "artifactName": "Water-Buddy-${version}.dmg",
+      "title": "Water Buddy"
     }
   }
 }
