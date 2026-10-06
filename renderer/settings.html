@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-QHspYcLLOKSarKa9WCONpLgp80qJjPebMyusqjGSeoo='; connect-src 'self' data: blob:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'" />
+  <title>Water Buddy</title>
+  <style>
+    :root { --blue: #2563eb; --sky: #38bdf8; --bg: #f0f7ff; --card: #fff; --text: #0f172a; --muted: #64748b; --line: #e2e8f0; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #0b1220; --card: #111a2e; --text: #e2e8f0; --muted: #94a3b8; --line: #1e293b; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 18px; background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 14px; }
+    h1 { margin: 0 0 14px; font-size: 22px; }
+    h2 { margin: 0 0 10px; font-size: 15px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+    .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .muted { color: var(--muted); font-size: 12.5px; }
+    .big { font-size: 30px; font-weight: 800; }
+    .bar { height: 10px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 10px 0; }
+    .bar > div { height: 100%; background: linear-gradient(90deg, var(--sky), var(--blue)); width: 0; transition: width .4s; }
+    button, .chip { font: inherit; border: 1px solid var(--line); background: var(--card); color: var(--text);
+      border-radius: 10px; padding: 7px 12px; cursor: pointer; }
+    button.primary { background: var(--blue); border-color: var(--blue); color: #fff; font-weight: 600; }
+    .chip.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+    input[type=number], input[type=time], select { font: inherit; padding: 6px 8px; border-radius: 8px;
+      border: 1px solid var(--line); background: var(--card); color: var(--text); }
+    input[type=number] { width: 72px; }
+    label { display: inline-flex; align-items: center; gap: 6px; }
+    .grid { display: grid; grid-template-columns: 150px 1fr; gap: 14px; align-items: start; }
+    #preview { width: 150px; height: 250px; margin: 0 auto; }
+    #crop-wrap { margin-top: 12px; }
+    #crop { width: 320px; height: 320px; border-radius: 10px; background: #000; cursor: grab; touch-action: none; display: block; }
+    #crop:active { cursor: grabbing; }
+    .colors label { font-size: 12.5px; }
+    input[type=color] { width: 34px; height: 26px; border: 0; padding: 0; background: none; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <h1>💧 Water Buddy</h1>
+
+  <div class="card">
+    <h2>Today</h2>
+    <div class="row" style="justify-content: space-between">
+      <div><span class="big" id="count">0</span> <span class="muted">/ <span id="goal-label">8</span> glasses</span></div>
+      <div class="row"><button id="minus" title="Remove a glass">−</button><button id="plus" title="Add a glass">+</button></div>
+    </div>
+    <div class="bar"><div id="bar"></div></div>
+    <div class="row" style="justify-content: space-between">
+      <span class="muted" id="status"></span>
+      <div class="row"><button id="pause"></button><button class="primary" id="now">Remind me now</button></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Remind me every</h2>
+    <div class="row" id="chips"></div>
+    <div class="row" style="margin-top: 10px">
+      <label>Custom <input type="number" id="custom" min="1" max="600" /> min</label>
+    </div>
+    <div class="row" style="margin-top: 12px">
+      <label>“Remind me later” comes back in
+        <select id="snooze">
+          <option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option>
+          <option value="20">20 min</option><option value="30">30 min</option>
+        </select>
+      </label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Active hours</h2>
+    <div class="row">
+      <label><input type="checkbox" id="ah-on" /> Only remind between</label>
+      <input type="time" id="ah-start" /> and <input type="time" id="ah-end" />
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Preferences</h2>
+    <div class="row" style="gap: 18px">
+      <label>Daily goal <input type="number" id="goal" min="1" max="30" /> glasses</label>
+      <label><input type="checkbox" id="sound" /> Sound effects</label>
+      <label><input type="checkbox" id="login" /> Open at login</label>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Your buddy</h2>
+    <div class="grid">
+      <div>
+        <div id="preview"></div>
+        <div class="row" style="justify-content: center; margin-top: 8px; gap: 4px">
+          <button data-mood="happy dance" title="Splash dance">🕺</button>
+          <button data-mood="happy dance hop" title="Side hops">🎶</button>
+          <button data-mood="happy drinking" title="Drink">🥤</button>
+          <button data-mood="walking" title="Walk">🚶</button>
+          <button data-mood="waving" title="Wave">👋</button>
+          <button data-mood="happy pose" title="Flex">💪</button>
+          <button data-mood="sad" title="Sad">😢</button>
+        </div>
+      </div>
+      <div>
+        <div class="row" style="margin-bottom: 10px">
+          <label><input type="radio" name="character" value="droppy" /> Droppy the water drop</label>
+          <label><input type="radio" name="character" value="photo" id="char-photo" /> My photo</label>
+        </div>
+        <p class="muted" style="margin-top: 0">Or upload a photo of yourself and pick your face: it goes on Droppy’s front, so you’re the
+          one who dries up or fills up.</p>
+        <div class="row">
+          <button class="primary" id="upload">Upload photo…</button>
+          <input type="file" id="file" accept="image/*" class="hidden" />
+        </div>
+        <div class="row colors" id="colors" style="margin-top: 12px; gap: 12px">
+          <label><input type="color" data-color="skin" /> Skin</label>
+          <label><input type="color" data-color="shirt" /> Shirt</label>
+          <label><input type="color" data-color="pants" /> Pants</label>
+          <label><input type="color" data-color="shoes" /> Shoes</label>
+        </div>
+      </div>
+    </div>
+    <div id="crop-wrap" class="hidden">
+      <p class="muted">Drag the circle over your head and resize it with the slider (or scroll). Line up your <b>eyes</b> with the
+        upper dashed line and your <b>mouth</b> with the lower one so the smile and tears land in the right place.</p>
+      <canvas id="crop"></canvas>
+      <div class="row" style="margin-top: 10px">
+        <label>Size <input type="range" id="radius" min="12" max="160" /></label>
+        <button class="primary" id="use-face">Use this face</button>
+        <button id="cancel-crop">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="importmap">{"imports":{"three":"../node_modules/three/build/three.module.js","three/addons/":"../node_modules/three/examples/jsm/"}}</script>
+
+  <script type="module" src="character.js"></script>
+  <script type="module" src="settings.js"></script>
+</body>
+</html>

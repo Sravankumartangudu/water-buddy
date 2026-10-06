@@ -1,0 +1,45 @@
+{
+  "name": "water-buddy",
+  "version": "1.0.0",
+  "description": "A menu-bar buddy that walks across your screen to remind you to drink water",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "env -u ELECTRON_RUN_AS_NODE electron .",
+    "demo": "env -u ELECTRON_RUN_AS_NODE electron . --demo",
+    "shot": "env -u ELECTRON_RUN_AS_NODE electron tools/shot.js",
+    "icons": "env -u ELECTRON_RUN_AS_NODE electron tools/icon.js",
+    "dist": "electron-builder --mac dir && rm -rf \"/Applications/Water Buddy.app\" && cp -R \"dist/mac-arm64/Water Buddy.app\" /Applications/"
+  },
+  "devDependencies": {
+    "electron": "^44.5.1",
+    "electron-builder": "^26.15.3"
+  },
+  "dependencies": {
+    "three": "^0.186.1"
+  },
+  "build": {
+    "appId": "com.waterbuddy.app",
+    "productName": "Water Buddy",
+    "mac": {
+      "icon": "assets/icon.icns",
+      "category": "public.app-category.healthcare-fitness",
+      "target": "dir",
+      "identity": null,
+      "extendInfo": {
+        "LSUIElement": true
+      }
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**",
+      "assets/**",
+      "!renderer/icon.*",
+      "!renderer/shot.*"
+    ],
+    "directories": {
+      "output": "dist"
+    }
+  }
+}

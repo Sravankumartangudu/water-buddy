@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-QHspYcLLOKSarKa9WCONpLgp80qJjPebMyusqjGSeoo='; connect-src 'self' data: blob:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'" />
+  <style>
+    body { margin: 0; background: #2b3445; display: flex; flex-wrap: wrap; font: 13px -apple-system, sans-serif; color: #fff; }
+    .cell { width: 260px; height: 440px; position: relative; }
+    .cell > div { width: 260px; height: 420px; }
+    .cell span { position: absolute; bottom: 2px; left: 0; right: 0; text-align: center; }
+  </style>
+</head>
+<body>
+  <script type="importmap">{"imports":{"three":"../node_modules/three/build/three.module.js","three/addons/":"../node_modules/three/examples/jsm/"}}</script>
+  <script type="module" src="shot.js"></script>
+
+</body>
+</html>
