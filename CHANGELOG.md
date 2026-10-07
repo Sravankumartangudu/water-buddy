@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.2 — 2026-10-07
+
+- Reports to [Nexus](https://github.com/Sravankumartangudu/nexus): Water Buddy writes a small heartbeat file to
+  `~/.nexus/heartbeats/` every 30 seconds, so Nexus shows it as running ("on duty", or "reminders paused").
+- Fixed: the installed app was missing the heartbeat file, so Nexus showed Water Buddy as Idle while it was running.
+
 ## 1.0.1 — 2026-10-06
 
 - Reminders can no longer stop for good: if Droppy's window crashes, hangs or fails to load, it closes after a few

@@ -156,6 +156,7 @@ npm run package                       # build the universal DMG in dist/
 | `main.js` | Main process: timer, active hours, tray menu, Dock icon, settings storage, reminder window |
 | `preload.js` | Bridge between the windows and the main process |
 | `renderer/overlay.*` | The full-screen, click-through reminder scene (walk-in, bubble, drink and later sequences) |
+| `nexus-beacon.js` | Writes a heartbeat to `~/.nexus/heartbeats/` every 30 s so [Nexus](https://github.com/Sravankumartangudu/nexus) shows Water Buddy as running |
 | `renderer/settings.*` | Settings window, including the photo cropper |
 | `renderer/character.js` | Droppy: geometry, shaders, face canvas, limbs, props and all animation states |
 | `renderer/sounds.js` | Synthesized sound effects and music |

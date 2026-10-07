@@ -1,6 +1,7 @@
 const { app, BrowserWindow, Tray, Menu, ipcMain, screen } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const nexus = require('./nexus-beacon'); // reports health to Nexus (the fleet monitor)
 
 const DEFAULTS = {
   intervalMin: 30,
@@ -349,6 +350,10 @@ else {
 function start() {
   if (process.platform === 'darwin' && app.dock) app.dock.hide();
   loadSettings();
+  nexus.start({
+    id: 'local.water-buddy', name: 'Water Buddy', version: app.getVersion(),
+    status: () => settings.paused ? ['warn', 'reminders paused'] : ['ok', 'on duty'],
+  });
   if (app.dock) app.dock.setIcon(ICON);
   tray = new Tray(path.join(__dirname, 'assets', 'trayTemplate.png')); // @2x is picked up automatically
   tray.setToolTip('Water Buddy');
