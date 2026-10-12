@@ -13,7 +13,7 @@ app.whenReady().then(async () => {
   const win = new BrowserWindow({ width: cols * 260, height: rows * 440, show: false, webPreferences: { offscreen: true } });
   win.webContents.on('console-message', (e) => console.log('[page]', e.message));
   const page = process.env.PAGE || 'shot.html';
-  await win.loadFile(path.join(__dirname, '..', 'renderer', page), { query: { shots, vh, cy, cols: String(cols), av: process.env.AV || '', hide: process.env.HIDE || '' } });
+  await win.loadFile(path.join(__dirname, '..', 'renderer', page), { query: { shots, vh, cy, cols: String(cols), av: process.env.AV || '', hide: process.env.HIDE || '', cast: process.env.CAST || '' } });
   await new Promise((r) => setTimeout(r, Number(process.env.WAIT) || 1200));
   const img = await win.webContents.capturePage();
   fs.writeFileSync(out, img.toPNG());

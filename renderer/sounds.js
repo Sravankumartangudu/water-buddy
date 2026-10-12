@@ -100,6 +100,162 @@
       noise(0, 0.12, { gain: 0.12, freq: 4000, q: 0.6 });
       noise(0.22, 0.18, { gain: 0.14, freq: 4500, q: 0.6 });
     },
+    // parched "waaater…" while crawling in
+    croak() {
+      tone(240, 0, 0.75, { type: 'sawtooth', gain: 0.06, slideTo: 150 });
+      noise(0, 0.6, { gain: 0.05, freq: 900, q: 0.7 });
+    },
+    whoosh() {
+      noise(0, 0.35, { gain: 0.18, freq: 800, q: 0.5 });
+      tone(200, 0, 0.3, { type: 'sine', gain: 0.08, slideTo: 600 });
+    },
+    // cartoon brakes
+    skid() {
+      tone(1500, 0, 0.5, { type: 'sawtooth', gain: 0.05, slideTo: 700 });
+      tone(1530, 0, 0.5, { type: 'square', gain: 0.025, slideTo: 720 });
+      noise(0, 0.55, { gain: 0.12, freq: 2500, q: 0.8 });
+    },
+    // timed to the burp pose: puff… BURP… "oops!"
+    burp() {
+      tone(110, 0.92, 0.45, { type: 'sawtooth', gain: 0.18, slideTo: 72 });
+      tone(116, 0.94, 0.4, { type: 'square', gain: 0.06, slideTo: 80 });
+      noise(0.92, 0.3, { gain: 0.1, freq: 300, q: 1.2 });
+      tone(700, 1.5, 0.12, { type: 'sine', gain: 0.1, slideTo: 520 });
+      tone(900, 1.64, 0.16, { type: 'sine', gain: 0.1, slideTo: 620 });
+    },
+    tada() {
+      [523, 659, 784].forEach((f, i) => marimba(f, i * 0.08, 0.3));
+      [523, 659, 784, 1047].forEach((f) => marimba(f, 0.28, 1.0));
+      kick(0.28);
+      splash(0.28);
+    },
+    // a whee! then a soft thump each time a hand or foot lands, every `rev / 2` seconds
+    cartwheel(dur, rev) {
+      tone(400, 0, 0.45, { type: 'sine', gain: 0.1, slideTo: 1100 });
+      for (let t = rev / 4; t < dur; t += rev / 2) tone(140, t, 0.1, { type: 'sine', gain: 0.2, slideTo: 70 });
+    },
+    // funky bass + finger snaps for the moonwalk, `beats` steps of `beat` seconds
+    groove(beats, beat) {
+      const bass = [98, 0, 98, 117, 0, 131, 117, 0];
+      for (let i = 0; i < beats; i++) {
+        const t = i * beat;
+        if (bass[i % 8]) tone(bass[i % 8], t, beat * 0.9, { type: 'triangle', gain: 0.22 });
+        if (i % 2) noise(t, 0.05, { gain: 0.16, freq: 3500, q: 2 });
+        shaker(t + beat / 2, 0.03);
+      }
+    },
+    // tantrum stomps, `n` of them `beat` seconds apart, plus an angry "hmph!"
+    stomp(n, beat) {
+      for (let i = 0; i < n; i++) {
+        kick(i * beat + beat * 0.74);
+        noise(i * beat + beat * 0.74, 0.12, { gain: 0.12, freq: 250, q: 0.8 });
+      }
+      tone(320, 0, 0.14, { type: 'sawtooth', gain: 0.08, slideTo: 220 });
+      tone(280, 0.18, 0.32, { type: 'sawtooth', gain: 0.08, slideTo: 180 });
+    },
+    // drip… drip… sinking into a puddle, with steam hissing off
+    melt() {
+      for (let i = 0; i < 7; i++) tone(620 - i * 60, i * 0.38, 0.22, { type: 'sine', gain: 0.12, slideTo: (620 - i * 60) * 0.5 });
+      noise(0.5, 2.8, { gain: 0.04, freq: 5000, type: 'highpass' });
+    },
+    poof() {
+      noise(0, 0.7, { gain: 0.12, freq: 3000, q: 0.5 });
+      tone(800, 0, 0.6, { type: 'sine', gain: 0.06, slideTo: 2000 });
+    },
+
+    // ---- Nimbus (cloud) ----
+    breeze() {
+      noise(0, 1.6, { gain: 0.07, freq: 500, q: 0.4 });
+      noise(0.5, 1.4, { gain: 0.05, freq: 900, q: 0.6 });
+    },
+    // breathing the glass in: rising sips
+    slurp() {
+      for (let i = 0; i < 5; i++) {
+        noise(0.35 + i * 0.4, 0.3, { gain: 0.08, freq: 1200 + i * 200, q: 1.5 });
+        tone(300 + i * 40, 0.35 + i * 0.4, 0.28, { type: 'sine', gain: 0.08, slideTo: 700 + i * 60 });
+      }
+    },
+    // the splash-dance tune over pitter-patter rain instead of the kick drum
+    rainSong(beats, beat) {
+      const bass = [131, 110, 87, 98];
+      const tune = [784, 0, 659, 784, 880, 0, 784, 659, 587, 659, 784, 0, 659, 587, 523, 0];
+      for (let i = 0; i < beats; i++) {
+        const t = i * beat;
+        if (i % 8 === 0 || i % 8 === 4) tone(bass[Math.floor(i / 8) % 4], t, beat * 2, { type: 'triangle', gain: 0.2 });
+        for (let k = 0; k < 3; k++) bloop(t + k * (beat / 3) + ((i * 7 + k * 3) % 5) * 0.01, 900 + ((i * 131 + k * 257) % 700));
+        if (tune[i % 16]) marimba(tune[i % 16], t, beat * 1.6);
+      }
+      [523, 659, 784, 1047].forEach((f, k) => marimba(f, beats * beat + k * 0.06, 0.8));
+    },
+    thunder() {
+      noise(0, 0.08, { gain: 0.3, freq: 3000, q: 0.4 }); // crack
+      noise(0.05, 1.6, { gain: 0.35, freq: 120, type: 'lowpass' });
+      tone(55, 0.05, 1.2, { type: 'sine', gain: 0.25, slideTo: 35 });
+    },
+
+    // ---- Glug (bottle) ----
+    boing() {
+      tone(180, 0, 0.35, { type: 'sine', gain: 0.2, slideTo: 620 });
+      tone(620, 0.3, 0.3, { type: 'sine', gain: 0.1, slideTo: 380 });
+    },
+    // hollow plastic landing
+    thunk() {
+      tone(240, 0, 0.12, { type: 'sine', gain: 0.25, slideTo: 140 });
+      noise(0, 0.08, { gain: 0.12, freq: 700, q: 2 });
+    },
+    // water glugging in from above
+    pour() {
+      noise(0.55, 1.7, { gain: 0.1, freq: 700, q: 0.7 });
+      for (let i = 0; i < 9; i++) tone(260 + i * 45, 0.6 + i * 0.17, 0.12, { type: 'sine', gain: 0.12, slideTo: 420 + i * 50 });
+      tone(500, 2.55, 0.08, { type: 'square', gain: 0.04 }); // cap clicks back on
+    },
+    pop() {
+      noise(0, 0.05, { gain: 0.3, freq: 5000, q: 0.7 });
+      tone(500, 0, 0.12, { type: 'sine', gain: 0.25, slideTo: 1400 });
+    },
+    spray() {
+      noise(0, 1.0, { gain: 0.12, freq: 6000, type: 'highpass' });
+    },
+    crinkle() {
+      for (let i = 0; i < 16; i++) noise(i * 0.05 + ((i * 37) % 7) * 0.006, 0.03, { gain: 0.12, freq: 4000 + ((i * 911) % 3000), q: 3 });
+    },
+
+    // ---- Finn (fish) ----
+    flop() {
+      noise(0, 0.07, { gain: 0.2, freq: 900, q: 1 });
+      tone(170, 0, 0.1, { type: 'sine', gain: 0.15, slideTo: 90 });
+    },
+    sploosh() {
+      noise(0, 1.0, { gain: 0.35, freq: 700, type: 'lowpass' });
+      noise(0.02, 0.6, { gain: 0.15, freq: 2500, q: 0.6 });
+      tone(320, 0, 0.4, { type: 'sine', gain: 0.2, slideTo: 60 });
+    },
+    plop() {
+      noise(0, 0.25, { gain: 0.14, freq: 1500, q: 0.7 });
+      bloop(0, 380);
+    },
+    bubbles() {
+      for (let i = 0; i < 6; i++) bloop(i * 0.11 + (i % 2) * 0.03, 500 + ((i * 173) % 500));
+    },
+    kiss() {
+      tone(900, 0, 0.12, { type: 'sine', gain: 0.12, slideTo: 1500 });
+      noise(0.1, 0.05, { gain: 0.15, freq: 3000, q: 1 });
+    },
+    // the splash-dance tune with bubbling percussion
+    bubbleTune(beats, beat) {
+      const bass = [131, 110, 87, 98];
+      const tune = [659, 784, 880, 784, 659, 0, 523, 587, 659, 0, 784, 0, 880, 784, 659, 587];
+      for (let i = 0; i < beats; i++) {
+        const t = i * beat;
+        if (i % 4 === 0) tone(bass[Math.floor(i / 8) % 4], t, beat * 1.8, { type: 'triangle', gain: 0.22 });
+        if (i % 2 === 1) bloop(t, 600 + ((i * 97) % 400));
+        if (i % 4 === 2) noise(t, 0.08, { gain: 0.08, freq: 1500, q: 1 });
+        if (tune[i % 16]) marimba(tune[i % 16] * (i >= 16 ? 1.5 : 1), t, beat * 1.6);
+      }
+      kick(beats * beat);
+      splash(beats * beat);
+      [523, 659, 784, 1047].forEach((f, k) => marimba(f, beats * beat + k * 0.06, 0.8));
+    },
   };
 
   window.Sounds = Sounds;

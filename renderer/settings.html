@@ -30,6 +30,12 @@
     label { display: inline-flex; align-items: center; gap: 6px; }
     .grid { display: grid; grid-template-columns: 150px 1fr; gap: 14px; align-items: start; }
     #preview { width: 150px; height: 250px; margin: 0 auto; }
+    .moods { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; margin-top: 8px; }
+    .moods button { padding: 4px 0; font-size: 15px; border-radius: 8px; }
+    .moods button.on, .casts button.on { background: var(--blue); border-color: var(--blue); }
+    .casts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin-top: 8px; }
+    .casts button { padding: 4px 0; font-size: 15px; border-radius: 8px; }
+    .who { display: grid; gap: 4px; }
     #crop-wrap { margin-top: 12px; }
     #crop { width: 320px; height: 320px; border-radius: 10px; background: #000; cursor: grab; touch-action: none; display: block; }
     #crop:active { cursor: grabbing; }
@@ -90,19 +96,21 @@
     <div class="grid">
       <div>
         <div id="preview"></div>
-        <div class="row" style="justify-content: center; margin-top: 8px; gap: 4px">
-          <button data-mood="happy dance" title="Splash dance">🕺</button>
-          <button data-mood="happy dance hop" title="Side hops">🎶</button>
-          <button data-mood="happy drinking" title="Drink">🥤</button>
-          <button data-mood="walking" title="Walk">🚶</button>
-          <button data-mood="waving" title="Wave">👋</button>
-          <button data-mood="happy pose" title="Flex">💪</button>
-          <button data-mood="sad" title="Sad">😢</button>
-        </div>
+        <div class="casts" id="casts"></div>
+        <div class="moods" id="moods"></div>
       </div>
       <div>
+        <p style="margin: 0 0 6px"><b>Who visits</b></p>
+        <div class="who">
+          <label><input type="radio" name="cast" value="rotate" /> Take turns (a different friend each time)</label>
+          <label><input type="radio" name="cast" value="droppy" /> 💧 Droppy, the water drop</label>
+          <label><input type="radio" name="cast" value="cloud" /> ☁️ Nimbus, the rain cloud</label>
+          <label><input type="radio" name="cast" value="bottle" /> 🧴 Glug, the water bottle</label>
+          <label><input type="radio" name="cast" value="fish" /> 🐠 Finn, the goldfish</label>
+        </div>
+        <p style="margin: 14px 0 6px"><b>Droppy’s face</b></p>
         <div class="row" style="margin-bottom: 10px">
-          <label><input type="radio" name="character" value="droppy" /> Droppy the water drop</label>
+          <label><input type="radio" name="character" value="droppy" /> Droppy’s own face</label>
           <label><input type="radio" name="character" value="photo" id="char-photo" /> My photo</label>
         </div>
         <p class="muted" style="margin-top: 0">Or upload a photo of yourself and pick your face: it goes on Droppy’s front, so you’re the

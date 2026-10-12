@@ -3,8 +3,11 @@ const PRESETS = [15, 30, 45, 60, 90];
 const EYE_LINE = 0.45; // fraction of head height — must match the overlays in character.js
 const MOUTH_LINE = 0.72;
 
+const CASTS = [['droppy', '💧', 'Droppy'], ['cloud', '☁️', 'Nimbus'], ['bottle', '🧴', 'Glug'], ['fish', '🐠', 'Finn']];
+
 let state;
 let previewMood = '';
+let previewCast = null; // which character the preview shows; starts as the one picked to visit
 
 // ---------- rendering ----------
 
@@ -34,11 +37,45 @@ function renderInterval() {
 
 function renderPreview() {
   const s = state.settings;
-  window.Buddy.render($('preview'), s);
+  previewCast ||= s.cast === 'rotate' ? 'droppy' : s.cast;
+  window.Buddy.render($('preview'), { ...s, cast: previewCast });
   $('preview').className = `buddy-host ${previewMood}`;
   const isPhoto = s.character === 'photo' && !!s.head;
   document.querySelectorAll('input[name=character]').forEach((r) => (r.checked = r.value === (isPhoto ? 'photo' : 'droppy')));
+  document.querySelectorAll('input[name=cast]').forEach((r) => (r.checked = r.value === s.cast));
   $('char-photo').disabled = !s.head;
+  renderCasts();
+}
+
+function renderCasts() {
+  $('casts').replaceChildren(...CASTS.map(([kind, emoji, name]) => {
+    const b = document.createElement('button');
+    b.textContent = emoji;
+    b.title = `Preview ${name}`;
+    b.classList.toggle('on', kind === previewCast);
+    b.onclick = () => {
+      if (kind === previewCast) return;
+      previewCast = kind;
+      previewMood = '';
+      renderPreview();
+    };
+    return b;
+  }));
+  // each character has its own moves
+  $('moods').replaceChildren(...window.Buddy.moves(previewCast).map(([mood, emoji, title]) => {
+    const b = document.createElement('button');
+    b.textContent = emoji;
+    b.title = title;
+    b.classList.toggle('on', mood === previewMood);
+    b.onclick = () => {
+      previewMood = previewMood === mood ? '' : mood;
+      $('moods').querySelectorAll('button').forEach((o) => o.classList.toggle('on', o === b && !!previewMood));
+      // clear first so one-shot animations (drinking) replay
+      $('preview').className = 'buddy-host';
+      requestAnimationFrame(() => ($('preview').className = `buddy-host ${previewMood}`));
+    };
+    return b;
+  }));
 }
 
 function renderAll() {
@@ -92,18 +129,19 @@ $('login').onchange = async (e) => {
   e.target.checked = await window.api.getOpenAtLogin(); // macOS may refuse
 };
 
-document.querySelectorAll('[data-mood]').forEach((b) => {
-  b.onclick = () => {
-    previewMood = previewMood === b.dataset.mood ? '' : b.dataset.mood;
-    // clear first so one-shot animations (drinking) replay
-    $('preview').className = 'buddy-host';
-    requestAnimationFrame(() => ($('preview').className = `buddy-host ${previewMood}`));
+document.querySelectorAll('input[name=cast]').forEach((r) => {
+  r.onchange = async () => {
+    await save({ cast: r.value });
+    if (r.value !== 'rotate') previewCast = r.value;
+    previewMood = '';
+    renderPreview();
   };
 });
 
 document.querySelectorAll('input[name=character]').forEach((r) => {
   r.onchange = async () => {
     await save({ character: r.value });
+    previewCast = 'droppy'; // the face only goes on Droppy
     renderPreview();
   };
 });
@@ -253,6 +291,7 @@ $('use-face').onclick = async () => {
 
   await save({ head, character: 'photo' });
   $('crop-wrap').classList.add('hidden');
+  previewCast = 'droppy';
   previewMood = 'happy dance';
   renderPreview();
 };

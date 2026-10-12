@@ -12,5 +12,5 @@ for (const spec of params.get('shots').split('|')) {
   label.textContent = `${state || 'stand'} @${time}`;
   cell.append(host, label);
   document.body.appendChild(cell);
-  render(host, { character: params.get('char') || 'droppy' }, { freeze: Number(time), viewH: Number(params.get('vh')) || 0, viewCY: Number(params.get('cy')) || 0 });
+  render(host, { character: params.get('char') || 'droppy', cast: params.get('cast') }, { freeze: Number(time), viewH: Number(params.get('vh')) || 0, viewCY: Number(params.get('cy')) || 0 });
 }

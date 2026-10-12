@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.0.3 — 2026-10-12
+
+- Three new characters take turns with Droppy, each with its own animations, sounds and story:
+  - **Nimbus**, a rain cloud: inhales the glass, rains on a flower bed, rides a rainbow. Skip it and it becomes a
+    grumbling storm cloud.
+  - **Glug**, a water bottle: rolls or bounces in, gets refilled, shakes until the cap pops, bottle-flips and rockets
+    off. Skip it and it crumples, tips over and rolls away.
+  - **Finn**, a goldfish: flops in out of water, gets a ball of water dropped on it, does loop-the-loops and dolphin
+    leaps, blows a kiss. Skip it and it dries up in the sun.
+- New **Who visits** setting: take turns (default) or always the same character. The Settings preview has buttons for
+  each character and its moves.
+- Droppy has new variations, picked at random each time: crawls or dashes in, burps, ta-da, cartwheels or moonwalks
+  off, throws a tantrum or melts away.
+
 ## 1.0.2 — 2026-10-07
 
 - Reports to [Nexus](https://github.com/Sravankumartangudu/nexus): Water Buddy writes a small heartbeat file to

@@ -12,8 +12,11 @@ const DEFAULTS = {
   paused: false,
   character: 'droppy', // 'droppy' (the water-drop mascot) or 'photo' (user's face on Droppy)
   head: null, // circular image data URL cropped from the user's photo
+  cast: 'rotate', // who visits: 'rotate' (take turns) or one of CAST
   log: { date: '', count: 0 },
 };
+
+const CAST = ['droppy', 'cloud', 'bottle', 'fish']; // Droppy, Nimbus, Glug, Finn
 
 const AUTO_SNOOZE_MS = 2 * 60 * 1000; // buddy gives up if ignored this long
 const OVERLAY_MAX_MS = AUTO_SNOOZE_MS + 90 * 1000; // ...plus the longest goodbye; a stuck overlay is closed after this
@@ -26,6 +29,7 @@ let nextAt = 0;
 let lastReason = 'interval';
 let firstRun = false;
 let shownDay = '';
+let visitor = ''; // who's on screen now (or came last)
 
 const settingsFile = () => path.join(app.getPath('userData'), 'settings.json');
 
@@ -43,6 +47,7 @@ function sanitize(s) {
   if (!isTime(s.activeHours.start)) s.activeHours.start = DEFAULTS.activeHours.start;
   if (!isTime(s.activeHours.end)) s.activeHours.end = DEFAULTS.activeHours.end;
   s.log.count = clampInt(s.log.count, 0, 999, 0);
+  if (s.cast !== 'rotate' && !CAST.includes(s.cast)) s.cast = DEFAULTS.cast;
   delete s.colors; // left over from the human avatar
   return s;
 }
@@ -151,8 +156,20 @@ function refreshUi() {
 
 // ---------- overlay (the walking buddy) ----------
 
+// Who comes this time: a --variants name (dev), the one picked in Settings, or a different one each time.
+function pickCast() {
+  const forced = CAST.find((c) => variantArgs().includes(c));
+  if (forced) return forced;
+  if (settings.cast !== 'rotate') return settings.cast;
+  const others = CAST.filter((c) => c !== visitor);
+  return others[Math.floor(Math.random() * others.length)];
+}
+
+const variantArgs = () => ((process.argv.find((a) => a.startsWith('--variants=')) || '').split('=')[1] || '').split(',');
+
 function showReminder() {
   if (overlayWin) return;
+  visitor = pickCast();
   const display = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
   const { x, y, width, height } = display.workArea;
   const h = Math.min(460, height);
@@ -201,6 +218,7 @@ function showReminder() {
 ipcMain.handle('overlay:init', () => ({
   character: settings.character,
   head: settings.head,
+  cast: visitor,
   sound: settings.sound,
   count: todayCount(),
   goal: settings.dailyGoal,
@@ -209,6 +227,7 @@ ipcMain.handle('overlay:init', () => ({
   reason: lastReason,
   autoSnoozeMs: AUTO_SNOOZE_MS,
   demoChoice: (process.argv.find((a) => a.startsWith('--demo=')) || '').split('=')[1] || null,
+  variants: variantArgs(), // dev: force animations (and the character)
 }));
 
 ipcMain.handle('overlay:choice', (_e, choice) => {

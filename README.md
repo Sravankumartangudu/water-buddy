@@ -1,7 +1,7 @@
 # 💧 Water Buddy
 
 A macOS menu-bar app that reminds you to drink water. At the interval you pick, **Droppy**, a squishy water drop on
-rubber-hose legs, walks onto your screen and asks if you've had a glass.
+rubber-hose legs (or one of its friends), comes onto your screen and asks if you've had a glass.
 
 - **🥤 Taking water now**: Droppy sips through a straw and fills up, does a splash dance, flexes and skips off the other
   side. The glass is added to today's count.
@@ -10,6 +10,17 @@ rubber-hose legs, walks onto your screen and asks if you've had a glass.
 - If you don't answer within 2 minutes, it counts as "Remind me later".
 
 ![Droppy walking in, waving, drinking, dancing, flexing and drying out under the sun](docs/droppy.png)
+
+Droppy takes turns with three friends, each with its own scene (or pick just one in Settings):
+
+| | Arrives | Taking water now | Remind me later |
+| --- | --- | --- | --- |
+| 💧 **Droppy**, a water drop | walks, crawls across the "desert" or dashes in and skids | gulps a glass (sometimes burps), splash dance, side hops, flex or ta-da, then skips, cartwheels or moonwalks off | trudges off with puppy eyes, throws a tantrum, or melts into a puddle |
+| ☁️ **Nimbus**, a rain cloud | floats in, small and wispy | inhales the glass and puffs up, rains on a flower bed, rides a rainbow, zooms off | turns into a grumbling grey storm cloud and drifts away |
+| 🧴 **Glug**, a water bottle | rolls in and pops upright, or bounces in | gets refilled from above, shakes until its cap pops off, bottle-flips, rockets off on a water jet | crumples, tips over and rolls away |
+| 🐠 **Finn**, a goldfish | flops in, gasping | a ball of water drops on it: loop-the-loops, dolphin leaps, blows a kiss, swims off in its bubble | dries up under the sun and flops away |
+
+![Nimbus, Glug and Finn](docs/cast.png)
 
 ## Install
 
@@ -94,7 +105,7 @@ again from Spotlight or Finder while it's running brings Settings back.
 
 ### When Droppy shows up
 
-Droppy walks in from the left and a speech bubble asks if you've had water, with a short "why drink water" fact and
+Droppy (or Nimbus, Glug or Finn) comes in from the left and a speech bubble asks if you've had water, with a short "why drink water" fact and
 today's count. Click **Taking water now** or **Remind me later**. The rest of the screen stays clickable while Droppy
 is out.
 
@@ -109,7 +120,8 @@ is out.
 | **Daily goal** | Glasses per day; the count resets every midnight |
 | **Sound effects** | Gulps, sniffles and the splash-dance tune |
 | **Open at login** | Starts Water Buddy when you log in (installed app only, not `npm start`) |
-| **Your buddy** | Droppy, or **My photo**: upload a photo (or drop one onto the window), drag and resize the circle over your face and click **Use this face** to put it on Droppy's front. Use JPEG or PNG; HEIC photos from an iPhone can't be opened. The buttons under the preview play each animation. |
+| **Who visits** | **Take turns** (a different character each reminder, the default), or always Droppy, Nimbus, Glug or Finn |
+| **Your buddy** | The buttons under the preview switch character (💧 ☁️ 🧴 🐠) and play each of its animations. **Droppy's face**: its own, or **My photo**: upload a photo (or drop one onto the window), drag and resize the circle over your face and click **Use this face** to put it on Droppy's front. Use JPEG or PNG; HEIC photos from an iPhone can't be opened. |
 
 Settings are saved to `~/Library/Application Support/water-buddy/settings.json`.
 
@@ -130,6 +142,10 @@ works as a **hydration gauge**, so the animation shows why water matters:
 - **Skipped:** a sun in sunglasses appears. Droppy steams, shrivels, goes pale and its tip wilts. It cries (losing even
   more water), trudges off and gives you puppy eyes on the way out.
 
+Nimbus, Glug and Finn (`renderer/cast/`) are built the same way and share the face, limbs and effects in
+`renderer/toon.js`. Each one's body also shows how hydrated it is: the cloud shrinks and greys, the bottle's water level
+drops and it crumples, and the fish fades and dries out.
+
 All sounds, including the marimba splash-dance tune, are synthesized with the Web Audio API (`renderer/sounds.js`), so
 there are no audio files.
 
@@ -139,7 +155,9 @@ there are no audio files.
 npm start                             # run from source (no install needed)
 npm run demo                          # same, but Droppy appears 1.5 s after launch
 npm run demo -- --demo=drink          # ...and answers "Taking water now" by itself (or --demo=later)
-npm run shot -- out.png "walking@0.1|happy dance@0.3" 2   # contact sheet of buddy states
+npm run demo -- --demo=drink --variants=fish,leap   # force a character (droppy, cloud, bottle, fish) and scene variants
+npm run shot -- out.png "walking@0.1|happy dance@0.3" 2   # contact sheet of buddy states (10 cells at most)
+CAST=bottle npm run shot -- out.png "happy flip@0.4" 1    # ...of another character
 npm run icons                         # regenerate the app and menu-bar icons from Droppy
 npm run icons -- "happy waving" 0.5   # ...using another pose and time
 npm run dist                          # build and install Water Buddy.app
@@ -155,10 +173,12 @@ npm run package                       # build the universal DMG in dist/
 | --- | --- |
 | `main.js` | Main process: timer, active hours, tray menu, Dock icon, settings storage, reminder window |
 | `preload.js` | Bridge between the windows and the main process |
-| `renderer/overlay.*` | The full-screen, click-through reminder scene (walk-in, bubble, drink and later sequences) |
+| `renderer/overlay.*` | The full-screen, click-through reminder scene: each character's entrance, bubble, drink and later sequences |
 | `nexus-beacon.js` | Writes a heartbeat to `~/.nexus/heartbeats/` every 30 s so [Nexus](https://github.com/Sravankumartangudu/nexus) shows Water Buddy as running |
 | `renderer/settings.*` | Settings window, including the photo cropper |
-| `renderer/character.js` | Droppy: geometry, shaders, face canvas, limbs, props and all animation states |
+| `renderer/character.js` | Droppy: geometry, shaders, face canvas, limbs, props and all animation states; picks the character to draw |
+| `renderer/toon.js` | Shared by the other characters: the animation stage, face canvas, rubber-hose limbs, sun, steam, sparkles |
+| `renderer/cast/` | Nimbus (`cloud.js`), Glug (`bottle.js`) and Finn (`fish.js`) |
 | `renderer/sounds.js` | Synthesized sound effects and music |
 | `renderer/icon.*`, `tools/icon.js` | Renders the app icon (`assets/icon.png`, `icon.icns`) and menu-bar icon (`assets/trayTemplate*.png`) |
 | `renderer/shot.*`, `tools/shot.js` | Screenshot / contact-sheet tool |
