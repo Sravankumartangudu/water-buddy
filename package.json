@@ -1,6 +1,6 @@
 {
   "name": "water-buddy",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "A menu-bar buddy that walks across your screen to remind you to drink water",
   "main": "main.js",
   "private": true,

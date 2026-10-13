@@ -319,35 +319,49 @@ function fmtTime(ts) {
   return new Date(ts).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 }
 
-function updateTray() {
-  if (!tray) return;
+function trayTemplate() {
   const count = todayCount();
-  tray.setTitle(` ${count}/${settings.dailyGoal}`);
   const status = settings.paused
     ? 'Reminders paused'
     : overlayWin
       ? 'Buddy is on screen now'
       : `Next reminder at ${fmtTime(nextAt)}`;
-  tray.setContextMenu(
-    Menu.buildFromTemplate([
-      { label: status, enabled: false },
-      { label: `Today: ${count} of ${settings.dailyGoal} glasses`, enabled: false },
-      { type: 'separator' },
-      { label: 'Remind me now', click: () => { lastReason = 'manual'; showReminder(); } },
-      {
-        label: settings.paused ? 'Resume reminders' : 'Pause reminders',
-        click: () => {
-          settings.paused = !settings.paused;
-          saveSettings();
-          if (!settings.paused) schedule(settings.intervalMin);
-          else refreshUi();
-        },
+  return [
+    { label: status, enabled: false },
+    { label: `Today: ${count} of ${settings.dailyGoal} glasses`, enabled: false },
+    { type: 'separator' },
+    { label: 'Remind me now', click: () => { lastReason = 'manual'; showReminder(); } },
+    {
+      label: settings.paused ? 'Resume reminders' : 'Pause reminders',
+      click: () => {
+        settings.paused = !settings.paused;
+        saveSettings();
+        if (!settings.paused) schedule(settings.intervalMin);
+        else refreshUi();
       },
-      { label: 'Settings…', click: openSettings },
-      { type: 'separator' },
-      { label: 'Quit Water Buddy', click: () => app.quit() },
-    ])
-  );
+    },
+    { label: 'Settings…', click: openSettings },
+    { type: 'separator' },
+    { label: 'Quit Water Buddy', click: () => app.quit() },
+  ];
+}
+
+function updateTray() {
+  if (!tray) return;
+  tray.setTitle(` ${todayCount()}/${settings.dailyGoal}`);
+  tray.setContextMenu(Menu.buildFromTemplate(trayTemplate()));
+}
+
+// The tray goes away while Water Buddy lives in Nexus's menu ("Keep agents in Nexus").
+function setTrayVisible(on) {
+  if (on && !tray) {
+    tray = new Tray(path.join(__dirname, 'assets', 'trayTemplate.png')); // @2x is picked up automatically
+    tray.setToolTip('Water Buddy');
+    updateTray();
+  } else if (!on && tray) {
+    tray.destroy();
+    tray = null;
+  }
 }
 
 // ---------- app lifecycle ----------
@@ -374,8 +388,8 @@ function start() {
     status: () => settings.paused ? ['warn', 'reminders paused'] : ['ok', 'on duty'],
   });
   if (app.dock) app.dock.setIcon(ICON);
-  tray = new Tray(path.join(__dirname, 'assets', 'trayTemplate.png')); // @2x is picked up automatically
-  tray.setToolTip('Water Buddy');
+  setTrayVisible(true);
+  nexus.attach({ menu: trayTemplate, setVisible: setTrayVisible });
   schedule(settings.intervalMin);
   setInterval(tick, 10 * 1000);
   // Opened by hand: show Settings. Started at login: stay quietly in the menu bar.

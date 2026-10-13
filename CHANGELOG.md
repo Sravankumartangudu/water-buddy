@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0 — 2026-10-13
+
+- **Lives in Nexus's menu-bar folder.** With Nexus 1.6, Water Buddy's menu also shows in its submenu in Nexus, and picking an item there works the same as from Water Buddy's own tray icon.
+  - Turn on **Keep Agents in Nexus** in Nexus to hide the tray icon. **Show Icon in Menu Bar** in Water Buddy's submenu keeps it.
+  - If Nexus isn't running, the icon always shows.
+
 ## 1.0.3 — 2026-10-12
 
 - Three new characters take turns with Droppy, each with its own animations, sounds and story:
