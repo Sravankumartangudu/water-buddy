@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0 — 2026-10-15
+
+- **Appearance setting.** Settings has a new 🎨 **Appearance** card: **System**, **Light** or **Dark**. It changes at once.
+  - **System** (the default) follows macOS, including Auto switching at sunset.
+  - Droppy and friends look the same in every mode.
+
 ## 1.1.0 — 2026-10-13
 
 - **Lives in Nexus's menu-bar folder.** With Nexus 1.6, Water Buddy's menu also shows in its submenu in Nexus, and picking an item there works the same as from Water Buddy's own tray icon.

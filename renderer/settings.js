@@ -43,6 +43,7 @@ function renderPreview() {
   const isPhoto = s.character === 'photo' && !!s.head;
   document.querySelectorAll('input[name=character]').forEach((r) => (r.checked = r.value === (isPhoto ? 'photo' : 'droppy')));
   document.querySelectorAll('input[name=cast]').forEach((r) => (r.checked = r.value === s.cast));
+  document.querySelectorAll('input[name=appearance]').forEach((r) => (r.checked = r.value === s.appearance));
   $('char-photo').disabled = !s.head;
   renderCasts();
 }
@@ -128,6 +129,10 @@ $('login').onchange = async (e) => {
   await save({ openAtLogin: e.target.checked });
   e.target.checked = await window.api.getOpenAtLogin(); // macOS may refuse
 };
+
+document.querySelectorAll('input[name=appearance]').forEach((r) => {
+  r.onchange = () => save({ appearance: r.value });
+});
 
 document.querySelectorAll('input[name=cast]').forEach((r) => {
   r.onchange = async () => {

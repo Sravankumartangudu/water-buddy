@@ -120,6 +120,7 @@ is out.
 | **Daily goal** | Glasses per day; the count resets every midnight |
 | **Sound effects** | Gulps, sniffles and the splash-dance tune |
 | **Open at login** | Starts Water Buddy when you log in (installed app only, not `npm start`) |
+| **Appearance** | **System** (follows macOS, Auto included), **Light** or **Dark** for the Settings window; changes at once. The characters look the same in every mode |
 | **Who visits** | **Take turns** (a different character each reminder, the default), or always Droppy, Nimbus, Glug or Finn |
 | **Your buddy** | The buttons under the preview switch character (💧 ☁️ 🧴 🐠) and play each of its animations. **Droppy's face**: its own, or **My photo**: upload a photo (or drop one onto the window), drag and resize the circle over your face and click **Use this face** to put it on Droppy's front. Use JPEG or PNG; HEIC photos from an iPhone can't be opened. |
 

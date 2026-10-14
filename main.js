@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Tray, Menu, ipcMain, screen } = require('electron');
+const { app, BrowserWindow, Tray, Menu, ipcMain, screen, nativeTheme } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const nexus = require('./nexus-beacon'); // reports health to Nexus (the fleet monitor)
@@ -12,6 +12,7 @@ const DEFAULTS = {
   paused: false,
   character: 'droppy', // 'droppy' (the water-drop mascot) or 'photo' (user's face on Droppy)
   head: null, // circular image data URL cropped from the user's photo
+  appearance: 'system', // Settings window look: 'system' (follows macOS), 'light' or 'dark'
   cast: 'rotate', // who visits: 'rotate' (take turns) or one of CAST
   log: { date: '', count: 0 },
 };
@@ -48,6 +49,7 @@ function sanitize(s) {
   if (!isTime(s.activeHours.end)) s.activeHours.end = DEFAULTS.activeHours.end;
   s.log.count = clampInt(s.log.count, 0, 999, 0);
   if (s.cast !== 'rotate' && !CAST.includes(s.cast)) s.cast = DEFAULTS.cast;
+  if (!['system', 'light', 'dark'].includes(s.appearance)) s.appearance = DEFAULTS.appearance;
   delete s.colors; // left over from the human avatar
   return s;
 }
@@ -298,6 +300,7 @@ ipcMain.handle('settings:save', (_e, patch) => {
   }
   // from `npm start` this would register the bare Electron binary as a login item
   if (openAtLogin !== undefined && app.isPackaged) app.setLoginItemSettings({ openAtLogin: !!openAtLogin });
+  nativeTheme.themeSource = settings.appearance;
   saveSettings();
   if (intervalChanged || hoursChanged || resumed) schedule(settings.intervalMin);
   else refreshUi();
@@ -383,6 +386,7 @@ else {
 function start() {
   if (process.platform === 'darwin' && app.dock) app.dock.hide();
   loadSettings();
+  nativeTheme.themeSource = settings.appearance; // the overlay is transparent and ignores the theme
   nexus.start({
     id: 'local.water-buddy', name: 'Water Buddy', version: app.getVersion(),
     status: () => settings.paused ? ['warn', 'reminders paused'] : ['ok', 'on duty'],
