@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.3.0 — 2026-10-15
+
+- **A fresher Settings window.** Settings is now grouped into cards with rows, and the yes/no options (**Only remind between set hours**, **Sound effects**, **Open at login**) are switches.
+  - **Appearance** shows System, Light and Dark as three small preview cards.
+  - A **Saved ✓** note appears after each change.
+- **Today shows a progress ring** that fills as you drink towards your daily goal and turns green when you reach it.
+- **Clearer in dark mode.** Card outlines, text and buttons have stronger contrast.
+- **Pause is labelled.** The Pause / Resume button has a tooltip and screen-reader label, and the **−** / **+** buttons are labelled too.
+
 ## 1.2.0 — 2026-10-15
 
 - **Appearance setting.** Settings has a new 🎨 **Appearance** card: **System**, **Light** or **Dark**. It changes at once.

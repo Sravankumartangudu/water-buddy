@@ -5,127 +5,228 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-QHspYcLLOKSarKa9WCONpLgp80qJjPebMyusqjGSeoo='; connect-src 'self' data: blob:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'" />
   <title>Water Buddy</title>
   <style>
-    :root { --blue: #2563eb; --sky: #38bdf8; --bg: #f0f7ff; --card: #fff; --text: #0f172a; --muted: #64748b; --line: #e2e8f0; }
+    /* Water Buddy settings look: grouped cards and rows, switches, preview cards */
+    :root {
+      color-scheme: light dark;
+      --accent: #2563eb; --accent-text: #1d4ed8; --accent-soft: rgba(37,99,235,.14); --on-accent: #fff; --sky: #38bdf8;
+      --bg: #eef4fb; --card: #fff; --field: #fff; --raised: #fff; --text: #0f172a; --muted: #566175;
+      --line: rgba(15,23,42,.10); --line-strong: rgba(15,23,42,.24); --hover: rgba(15,23,42,.05); --seg: rgba(15,23,42,.07);
+      --shadow: 0 1px 2px rgba(15,23,42,.06), 0 4px 14px rgba(15,23,42,.05);
+      --ok: #15803d; --ring-track: rgba(15,23,42,.09);
+    }
     @media (prefers-color-scheme: dark) {
-      :root { --bg: #0b1220; --card: #111a2e; --text: #e2e8f0; --muted: #94a3b8; --line: #1e293b; }
+      :root {
+        --accent: #2563eb; --accent-text: #8ab4ff; --accent-soft: rgba(96,150,255,.22);
+        --bg: #0b1220; --card: #152038; --field: #0e1729; --raised: #22304d; --text: #eef2f9; --muted: #a9b5ca;
+        --line: rgba(255,255,255,.14); --line-strong: rgba(255,255,255,.30); --hover: rgba(255,255,255,.07); --seg: rgba(255,255,255,.10);
+        --shadow: 0 0 0 .5px rgba(255,255,255,.08), 0 6px 18px rgba(0,0,0,.35);
+        --ok: #4ade80; --ring-track: rgba(255,255,255,.13);
+      }
     }
     * { box-sizing: border-box; }
-    body { margin: 0; padding: 18px; background: var(--bg); color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 14px; }
-    h1 { margin: 0 0 14px; font-size: 22px; }
-    h2 { margin: 0 0 10px; font-size: 15px; }
-    .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
-    .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .muted { color: var(--muted); font-size: 12.5px; }
-    .big { font-size: 30px; font-weight: 800; }
-    .bar { height: 10px; background: var(--line); border-radius: 99px; overflow: hidden; margin: 10px 0; }
-    .bar > div { height: 100%; background: linear-gradient(90deg, var(--sky), var(--blue)); width: 0; transition: width .4s; }
-    button, .chip { font: inherit; border: 1px solid var(--line); background: var(--card); color: var(--text);
-      border-radius: 10px; padding: 7px 12px; cursor: pointer; }
-    button.primary { background: var(--blue); border-color: var(--blue); color: #fff; font-weight: 600; }
-    .chip.active { background: var(--blue); border-color: var(--blue); color: #fff; }
-    input[type=number], input[type=time], select { font: inherit; padding: 6px 8px; border-radius: 8px;
-      border: 1px solid var(--line); background: var(--card); color: var(--text); }
+    body { margin: 0; padding: 18px 18px 40px; background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 13px; line-height: 1.4; }
+    .brand { display: flex; align-items: center; gap: 10px; margin: 0 2px 16px; }
+    .logo { width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; font-size: 19px;
+      background: linear-gradient(145deg, #7dd3fc, var(--accent)); box-shadow: 0 2px 6px rgba(37,99,235,.35); }
+    h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -.2px; }
+    .group { font-size: 12px; font-weight: 600; color: var(--muted); margin: 0 4px 6px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow);
+      margin-bottom: 18px; overflow: hidden; }
+    .card > * + * { border-top: 1px solid var(--line); }
+    .row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; min-height: 46px; }
+    .row.wrap { flex-wrap: wrap; }
+    .grow { flex: 1; min-width: 0; }
+    .label { font-weight: 500; }
+    .desc, .muted { color: var(--muted); font-size: 12px; line-height: 1.4; }
+    .desc { margin-top: 1px; }
+    .unit { color: var(--muted); margin-left: 6px; }
+    .note { padding: 11px 14px; color: var(--muted); font-size: 12px; line-height: 1.45; }
+
+    /* today: progress ring */
+    .today { display: flex; align-items: center; gap: 16px; padding: 16px 14px; }
+    .ring { position: relative; width: 104px; height: 104px; flex: none; }
+    .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); display: block; }
+    .ring .track { fill: none; stroke: var(--ring-track); stroke-width: 10; }
+    .ring .fill { fill: none; stroke: url(#ringGrad); stroke-width: 10; stroke-linecap: round;
+      stroke-dasharray: 251.33; stroke-dashoffset: 251.33; transition: stroke-dashoffset .5s ease; }
+    .ring.done .fill { stroke: var(--ok); }
+    .ring .mid { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .big { font-size: 30px; font-weight: 800; line-height: 1; }
+    .ring .of { font-size: 11px; color: var(--muted); margin-top: 3px; }
+    .today-side { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+    .today-side .title { font-size: 15px; font-weight: 600; }
+    .btns { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+    /* controls */
+    button { font: inherit; border: 1px solid var(--line-strong); background: var(--raised); color: var(--text);
+      border-radius: 8px; padding: 5px 12px; cursor: pointer; white-space: nowrap; }
+    button:hover { background: color-mix(in srgb, var(--raised) 88%, var(--accent)); }
+    button:active { filter: brightness(.94); }
+    button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
+    button.primary { background: var(--accent); border-color: transparent; color: var(--on-accent); font-weight: 600; }
+    button.primary:hover { filter: brightness(1.08); }
+    button.round { width: 32px; height: 32px; padding: 0; font-size: 17px; line-height: 1; border-radius: 50%; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip.active { background: var(--accent); border-color: transparent; color: var(--on-accent); font-weight: 600; }
+    input[type=number], input[type=time], select { font: inherit; padding: 5px 9px; border: 1px solid var(--line-strong);
+      border-radius: 7px; background: var(--field); color: var(--text); outline: none; }
+    input[type=number]:focus, input[type=time]:focus, select:focus { border-color: var(--accent-text); box-shadow: 0 0 0 3px var(--accent-soft); }
     input[type=number] { width: 72px; }
-    label { display: inline-flex; align-items: center; gap: 6px; }
-    .grid { display: grid; grid-template-columns: 150px 1fr; gap: 14px; align-items: start; }
+    .switch { position: relative; display: inline-block; width: 38px; height: 22px; flex: none; }
+    .switch input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; margin: 0; cursor: pointer; }
+    .switch .track { position: absolute; inset: 0; background: var(--seg); border-radius: 22px; transition: .18s;
+      box-shadow: inset 0 0 0 1px var(--line-strong); pointer-events: none; }
+    .switch .track:before { content: ""; position: absolute; width: 18px; height: 18px; left: 2px; top: 2px; border-radius: 50%;
+      background: #fff; transition: .18s; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+    .switch input:checked + .track { background: var(--accent); box-shadow: none; }
+    .switch input:checked + .track:before { transform: translateX(16px); }
+    .switch input:focus-visible + .track { outline: 2px solid var(--accent-text); outline-offset: 2px; }
+    .switch input:disabled + .track { opacity: .45; }
+
+    /* appearance preview cards */
+    .looks { display: flex; gap: 12px; padding: 14px; flex-wrap: wrap; }
+    .looks label { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; position: relative; }
+    .looks input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .pv { width: 96px; height: 72px; border-radius: 9px; overflow: hidden; display: flex; box-shadow: 0 0 0 1px var(--line-strong); transition: box-shadow .15s; }
+    .looks label:has(input:checked) .pv { box-shadow: 0 0 0 3px var(--accent-text); }
+    .looks label:has(input:focus-visible) .pv { box-shadow: 0 0 0 3px var(--accent-text), 0 0 0 6px var(--accent-soft); }
+    .looks label:has(input:checked) span { color: var(--accent-text); font-weight: 600; }
+    .pv i { flex: 1; position: relative; }
+    .pv i:before { content: ""; position: absolute; left: 11px; top: 11px; right: 11px; height: 9px; border-radius: 3px; background: var(--b1); }
+    .pv i:after { content: ""; position: absolute; left: 11px; top: 27px; width: 60%; height: 24px; border-radius: 4px; background: var(--b2); }
+    .pv .l { background: #f2f2f5; --b1: #fff; --b2: #d6e8ff; }
+    .pv .d { background: #1c2333; --b1: #33405c; --b2: #1f4f86; }
+
+    /* radios: option rows */
+    input[type=radio] { appearance: none; -webkit-appearance: none; width: 16px; height: 16px; margin: 0; flex: none; border-radius: 50%;
+      border: 1.5px solid var(--line-strong); background: var(--field); display: inline-grid; place-content: center; cursor: pointer; }
+    input[type=radio]:checked { border-color: var(--accent); background: var(--accent); box-shadow: inset 0 0 0 3px var(--accent); }
+    input[type=radio]:checked:after { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #fff; }
+    input[type=radio]:disabled { opacity: .45; cursor: default; }
+    .opt { display: flex; align-items: center; gap: 10px; padding: 9px 14px; cursor: pointer; }
+    .opt:hover { background: var(--hover); }
+
+    .buddy { display: grid; grid-template-columns: 150px 1fr; gap: 14px; padding: 14px; align-items: start; }
     #preview { width: 150px; height: 250px; margin: 0 auto; }
     .moods { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; margin-top: 8px; }
     .moods button { padding: 4px 0; font-size: 15px; border-radius: 8px; }
-    .moods button.on, .casts button.on { background: var(--blue); border-color: var(--blue); }
     .casts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin-top: 8px; }
     .casts button { padding: 4px 0; font-size: 15px; border-radius: 8px; }
-    .who { display: grid; gap: 4px; }
-    #crop-wrap { margin-top: 12px; }
-    #crop { width: 320px; height: 320px; border-radius: 10px; background: #000; cursor: grab; touch-action: none; display: block; }
+    .moods button.on, .casts button.on { background: var(--accent); border-color: transparent; }
+    .buddy .list { margin: 0 -14px; }
+    .buddy .list:first-child { margin-top: 0; }
+    .sub { font-weight: 600; margin: 0 0 4px; }
+    #crop-wrap { padding: 14px; }
+    #crop { width: 320px; max-width: 100%; height: auto; aspect-ratio: 1; border-radius: 10px; background: #000; cursor: grab; touch-action: none; display: block; }
     #crop:active { cursor: grabbing; }
     .hidden { display: none !important; }
+    @media (max-width: 460px) {
+      .buddy { grid-template-columns: 1fr; }
+      .today { flex-wrap: wrap; }
+    }
+
+    .toast { position: fixed; right: 18px; bottom: 16px; z-index: 9999; padding: 6px 12px; border-radius: 8px; font-weight: 500; font-size: 12px;
+      background: var(--raised); color: var(--ok); border: 1px solid color-mix(in srgb, var(--ok) 40%, transparent);
+      box-shadow: 0 4px 14px rgba(0,0,0,.2); opacity: 0; transform: translateY(6px); transition: opacity .18s, transform .18s; pointer-events: none; }
+    .toast.show { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) { .switch .track, .switch .track:before, .toast, .pv, .ring .fill { transition: none; } }
   </style>
 </head>
 <body>
-  <h1>💧 Water Buddy</h1>
+  <div class="brand"><div class="logo" aria-hidden="true">💧</div><h1>Water Buddy</h1></div>
 
+  <div class="group">Today</div>
   <div class="card">
-    <h2>Today</h2>
-    <div class="row" style="justify-content: space-between">
-      <div><span class="big" id="count">0</span> <span class="muted">/ <span id="goal-label">8</span> glasses</span></div>
-      <div class="row"><button id="minus" title="Remove a glass">−</button><button id="plus" title="Add a glass">+</button></div>
+    <div class="today">
+      <div class="ring" id="ring" role="img" aria-label="Today's water intake">
+        <svg viewBox="0 0 100 100" aria-hidden="true">
+          <defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#38bdf8"/><stop offset="1" stop-color="#2563eb"/></linearGradient></defs>
+          <circle class="track" cx="50" cy="50" r="40"/>
+          <circle class="fill" id="ring-fill" cx="50" cy="50" r="40"/>
+        </svg>
+        <div class="mid"><span class="big" id="count">0</span><span class="of">of <span id="goal-label">8</span></span></div>
+      </div>
+      <div class="today-side">
+        <div class="title">Glasses of water today</div>
+        <div class="btns">
+          <button class="round" id="minus" title="Remove a glass" aria-label="Remove a glass">−</button>
+          <button class="round" id="plus" title="Add a glass" aria-label="Add a glass">+</button>
+        </div>
+        <div class="muted" id="status"></div>
+      </div>
     </div>
-    <div class="bar"><div id="bar"></div></div>
-    <div class="row" style="justify-content: space-between">
-      <span class="muted" id="status"></span>
-      <div class="row"><button id="pause"></button><button class="primary" id="now">Remind me now</button></div>
+    <div class="row wrap" style="justify-content: flex-end">
+      <button id="pause" title="Pause reminders" aria-label="Pause reminders">⏸ Pause</button>
+      <button class="primary" id="now">Remind me now</button>
     </div>
   </div>
 
+  <div class="group">Reminders</div>
   <div class="card">
-    <h2>Remind me every</h2>
-    <div class="row" id="chips"></div>
-    <div class="row" style="margin-top: 10px">
-      <label>Custom <input type="number" id="custom" min="1" max="600" /> min</label>
-    </div>
-    <div class="row" style="margin-top: 12px">
-      <label>“Remind me later” comes back in
-        <select id="snooze">
-          <option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option>
-          <option value="20">20 min</option><option value="30">30 min</option>
-        </select>
-      </label>
+    <div class="row wrap"><div class="grow"><div class="label">Remind me every</div></div></div>
+    <div class="row"><div class="chips" id="chips"></div></div>
+    <div class="row"><div class="grow"><div class="label">Custom interval</div></div><span><input type="number" id="custom" min="1" max="600" aria-label="Custom interval in minutes" /><span class="unit">min</span></span></div>
+    <div class="row"><div class="grow"><div class="label">“Remind me later” comes back in</div></div>
+      <select id="snooze" aria-label="Remind me later delay">
+        <option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option>
+        <option value="20">20 min</option><option value="30">30 min</option>
+      </select>
     </div>
   </div>
 
+  <div class="group">Active hours</div>
   <div class="card">
-    <h2>Active hours</h2>
-    <div class="row">
-      <label><input type="checkbox" id="ah-on" /> Only remind between</label>
-      <input type="time" id="ah-start" /> and <input type="time" id="ah-end" />
-    </div>
+    <div class="row"><div class="grow"><div class="label">Only remind between set hours</div><div class="desc">Outside these times your buddy stays quiet.</div></div>
+      <label class="switch"><input type="checkbox" id="ah-on" role="switch" aria-label="Only remind between set hours" /><span class="track"></span></label></div>
+    <div class="row wrap"><div class="grow"><div class="label">From and to</div></div>
+      <span><input type="time" id="ah-start" aria-label="Start time" /> <span class="unit">to</span> <input type="time" id="ah-end" aria-label="End time" /></span></div>
   </div>
 
+  <div class="group">Preferences</div>
   <div class="card">
-    <h2>Preferences</h2>
-    <div class="row" style="gap: 18px">
-      <label>Daily goal <input type="number" id="goal" min="1" max="30" /> glasses</label>
-      <label><input type="checkbox" id="sound" /> Sound effects</label>
-      <label><input type="checkbox" id="login" /> Open at login</label>
-    </div>
+    <div class="row"><div class="grow"><div class="label">Daily goal</div></div><span><input type="number" id="goal" min="1" max="30" aria-label="Daily goal in glasses" /><span class="unit">glasses</span></span></div>
+    <div class="row"><div class="grow"><div class="label">Sound effects</div></div>
+      <label class="switch"><input type="checkbox" id="sound" role="switch" aria-label="Sound effects" /><span class="track"></span></label></div>
+    <div class="row"><div class="grow"><div class="label">Open at login</div></div>
+      <label class="switch"><input type="checkbox" id="login" role="switch" aria-label="Open at login" /><span class="track"></span></label></div>
   </div>
 
+  <div class="group">Appearance</div>
   <div class="card">
-    <h2>🎨 Appearance</h2>
-    <div class="row" style="gap: 18px">
-      <label><input type="radio" name="appearance" value="system" /> System</label>
-      <label><input type="radio" name="appearance" value="light" /> Light</label>
-      <label><input type="radio" name="appearance" value="dark" /> Dark</label>
+    <div class="looks">
+      <label><input type="radio" name="appearance" value="system" /><div class="pv"><i class="l"></i><i class="d"></i></div><span>System</span></label>
+      <label><input type="radio" name="appearance" value="light" /><div class="pv"><i class="l"></i><i class="l"></i></div><span>Light</span></label>
+      <label><input type="radio" name="appearance" value="dark" /><div class="pv"><i class="d"></i><i class="d"></i></div><span>Dark</span></label>
     </div>
-    <p class="muted" style="margin-bottom: 0">Changes at once. System switches with macOS (Settings › Appearance, Auto included).</p>
+    <div class="note">Changes at once. System switches with macOS (Settings › Appearance, Auto included).</div>
   </div>
 
+  <div class="group">Your buddy</div>
   <div class="card">
-    <h2>Your buddy</h2>
-    <div class="grid">
+    <div class="buddy">
       <div>
         <div id="preview"></div>
         <div class="casts" id="casts"></div>
         <div class="moods" id="moods"></div>
       </div>
       <div>
-        <p style="margin: 0 0 6px"><b>Who visits</b></p>
-        <div class="who">
-          <label><input type="radio" name="cast" value="rotate" /> Take turns (a different friend each time)</label>
-          <label><input type="radio" name="cast" value="droppy" /> 💧 Droppy, the water drop</label>
-          <label><input type="radio" name="cast" value="cloud" /> ☁️ Nimbus, the rain cloud</label>
-          <label><input type="radio" name="cast" value="bottle" /> 🧴 Glug, the water bottle</label>
-          <label><input type="radio" name="cast" value="fish" /> 🐠 Finn, the goldfish</label>
+        <p class="sub">Who visits</p>
+        <div class="list">
+          <label class="opt"><input type="radio" name="cast" value="rotate" /> Take turns (a different friend each time)</label>
+          <label class="opt"><input type="radio" name="cast" value="droppy" /> 💧 Droppy, the water drop</label>
+          <label class="opt"><input type="radio" name="cast" value="cloud" /> ☁️ Nimbus, the rain cloud</label>
+          <label class="opt"><input type="radio" name="cast" value="bottle" /> 🧴 Glug, the water bottle</label>
+          <label class="opt"><input type="radio" name="cast" value="fish" /> 🐠 Finn, the goldfish</label>
         </div>
-        <p style="margin: 14px 0 6px"><b>Droppy’s face</b></p>
-        <div class="row" style="margin-bottom: 10px">
-          <label><input type="radio" name="character" value="droppy" /> Droppy’s own face</label>
-          <label><input type="radio" name="character" value="photo" id="char-photo" /> My photo</label>
+        <p class="sub" style="margin-top: 12px">Droppy’s face</p>
+        <div class="list">
+          <label class="opt"><input type="radio" name="character" value="droppy" /> Droppy’s own face</label>
+          <label class="opt"><input type="radio" name="character" value="photo" id="char-photo" /> My photo</label>
         </div>
-        <p class="muted" style="margin-top: 0">Or upload a photo of yourself and pick your face: it goes on Droppy’s front, so you’re the
+        <p class="muted">Or upload a photo of yourself and pick your face: it goes on Droppy’s front, so you’re the
           one who dries up or fills up.</p>
-        <div class="row">
+        <div class="row" style="padding: 0">
           <button class="primary" id="upload">Upload photo…</button>
           <input type="file" id="file" accept="image/*" class="hidden" />
         </div>
@@ -136,13 +237,15 @@
       <p class="muted">Drag the circle over your head and resize it with the slider (or scroll). Line up your <b>eyes</b> with the
         upper dashed line and your <b>mouth</b> with the lower one so the smile and tears land in the right place.</p>
       <canvas id="crop"></canvas>
-      <div class="row" style="margin-top: 10px">
+      <div class="row" style="margin-top: 10px; padding: 0">
         <label>Size <input type="range" id="radius" min="12" max="160" /></label>
         <button class="primary" id="use-face">Use this face</button>
         <button id="cancel-crop">Cancel</button>
       </div>
     </div>
   </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">Saved ✓</div>
 
   <script type="importmap">{"imports":{"three":"../node_modules/three/build/three.module.js","three/addons/":"../node_modules/three/examples/jsm/"}}</script>
 

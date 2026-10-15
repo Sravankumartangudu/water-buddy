@@ -1,4 +1,5 @@
 const $ = (id) => document.getElementById(id);
+const RING = 251.33; // circumference of the progress ring (r = 40)
 const PRESETS = [15, 30, 45, 60, 90];
 const EYE_LINE = 0.45; // fraction of head height — must match the overlays in character.js
 const MOUTH_LINE = 0.72;
@@ -16,8 +17,14 @@ function renderToday() {
   const count = s.log.count;
   $('count').textContent = count;
   $('goal-label').textContent = s.dailyGoal;
-  $('bar').style.width = `${Math.min(100, (count / s.dailyGoal) * 100)}%`;
+  const frac = Math.min(1, count / s.dailyGoal);
+  $('ring-fill').style.strokeDashoffset = RING * (1 - frac);
+  $('ring').classList.toggle('done', count >= s.dailyGoal);
+  $('ring').setAttribute('aria-label', `Today's water intake: ${count} of ${s.dailyGoal} glasses`);
   $('pause').textContent = s.paused ? '▶ Resume' : '⏸ Pause';
+  const pauseLabel = s.paused ? 'Resume reminders' : 'Pause reminders';
+  $('pause').title = pauseLabel;
+  $('pause').setAttribute('aria-label', pauseLabel);
   const time = new Date(state.nextAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
   $('status').textContent = s.paused ? 'Reminders paused' : state.reminding ? 'Buddy is on screen now 👋' : `Next reminder at ${time}`;
 }
@@ -92,9 +99,18 @@ function renderAll() {
   renderPreview();
 }
 
+let toastTimer;
+function saved() {
+  const t = $('toast');
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1400);
+}
+
 async function save(patch) {
   state = await window.api.save(patch);
   renderToday();
+  if (patch.logDelta === undefined) saved(); // the ring already shows glass changes
   return state;
 }
 
