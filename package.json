@@ -1,6 +1,6 @@
 {
   "name": "water-buddy",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "A menu-bar buddy that walks across your screen to remind you to drink water",
   "main": "main.js",
   "private": true,
@@ -36,6 +36,7 @@
     "files": [
       "main.js",
       "nexus-beacon.js",
+      "fleet-styles-node.js",
       "preload.js",
       "renderer/**",
       "assets/**",

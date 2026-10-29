@@ -2,6 +2,7 @@ const { app, BrowserWindow, Tray, Menu, ipcMain, screen, nativeTheme } = require
 const path = require('path');
 const fs = require('fs');
 const nexus = require('./nexus-beacon'); // reports health to Nexus (the fleet monitor)
+const styles = require('./fleet-styles-node'); // the Settings window's design, also picked in Nexus
 
 const DEFAULTS = {
   intervalMin: 30,
@@ -13,6 +14,7 @@ const DEFAULTS = {
   character: 'droppy', // 'droppy' (the water-drop mascot) or 'photo' (user's face on Droppy)
   head: null, // circular image data URL cropped from the user's photo
   appearance: 'system', // Settings window look: 'system' (follows macOS), 'light' or 'dark'
+  uiStyle: 'standard', // Settings window design (fleet-styles-node.js); the buddy keeps its own look
   cast: 'rotate', // who visits: 'rotate' (take turns) or one of CAST
   log: { date: '', count: 0 },
 };
@@ -50,6 +52,7 @@ function sanitize(s) {
   s.log.count = clampInt(s.log.count, 0, 999, 0);
   if (s.cast !== 'rotate' && !CAST.includes(s.cast)) s.cast = DEFAULTS.cast;
   if (!['system', 'light', 'dark'].includes(s.appearance)) s.appearance = DEFAULTS.appearance;
+  if (!styles.list.some((st) => st.id === s.uiStyle)) s.uiStyle = DEFAULTS.uiStyle;
   delete s.colors; // left over from the human avatar
   return s;
 }
@@ -147,6 +150,8 @@ function stateSnapshot() {
     settings: { ...settings, log: { date: todayKey(), count: todayCount() } },
     nextAt,
     reminding: !!overlayWin,
+    styles: styles.list,
+    styleFleet: styles.parentInstalled(),
   };
 }
 
@@ -270,6 +275,7 @@ function openSettings() {
     webPreferences: { preload: path.join(__dirname, 'preload.js') },
   });
   const win = settingsWin;
+  styles.wear(win.webContents);
   win.loadFile(path.join(__dirname, 'renderer', 'settings.html'));
   // Menu-bar app: show Droppy in the Dock only while Settings is open. Bring the window to the
   // front once both are ready; activating before the Dock switch finishes leaves it behind other apps.
@@ -289,7 +295,7 @@ function openSettings() {
 ipcMain.handle('state:get', () => stateSnapshot());
 
 ipcMain.handle('settings:save', (_e, patch) => {
-  const { logDelta, openAtLogin, log: _log, ...rest } = patch;
+  const { logDelta, openAtLogin, uiStyle, log: _log, ...rest } = patch;
   const intervalChanged = rest.intervalMin !== undefined && rest.intervalMin !== settings.intervalMin;
   const hoursChanged = rest.activeHours !== undefined;
   const resumed = rest.paused === false && settings.paused;
@@ -301,6 +307,7 @@ ipcMain.handle('settings:save', (_e, patch) => {
   // from `npm start` this would register the bare Electron binary as a login item
   if (openAtLogin !== undefined && app.isPackaged) app.setLoginItemSettings({ openAtLogin: !!openAtLogin });
   nativeTheme.themeSource = settings.appearance;
+  if (uiStyle !== undefined) styles.choose(uiStyle);
   saveSettings();
   if (intervalChanged || hoursChanged || resumed) schedule(settings.intervalMin);
   else refreshUi();
@@ -387,6 +394,10 @@ function start() {
   if (process.platform === 'darwin' && app.dock) app.dock.hide();
   loadSettings();
   nativeTheme.themeSource = settings.appearance; // the overlay is transparent and ignores the theme
+  styles.start({
+    app: 'Water Buddy', id: 'com.waterbuddy.app',
+    get: () => settings.uiStyle, set: (v) => { settings.uiStyle = v; saveSettings(); }, changed: refreshUi,
+  });
   nexus.start({
     id: 'local.water-buddy', name: 'Water Buddy', version: app.getVersion(),
     status: () => settings.paused ? ['warn', 'reminders paused'] : ['ok', 'on duty'],

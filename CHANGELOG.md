@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.0 — 2026-10-29
+
+- **🎨 Style** in Settings: the Settings window can wear one of 14 designs (Standard, Skeuomorphic, Flat, Material, Neumorphic, Glassmorphism, Liquid Glass, Claymorphism, Neo-brutalism, Swiss minimal, Bento grid, Retro, Aurora, Cyber). Each has a light and a dark look, so Appearance still applies. It changes at once. The characters look the same in every style.
+- With [Nexus](https://github.com/Sravankumartangudu/nexus) 1.12 installed, the Style can also be picked in the common settings (🎨 Style per App); both always show the same one.
+
 ## 1.3.0 — 2026-10-15
 
 - **A fresher Settings window.** Settings is now grouped into cards with rows, and the yes/no options (**Only remind between set hours**, **Sound effects**, **Open at login**) are switches.

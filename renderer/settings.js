@@ -12,6 +12,43 @@ let previewCast = null; // which character the preview shows; starts as the one 
 
 // ---------- rendering ----------
 
+/* fleet-styles:begin js */
+/* Fleet styles kit v1 (script half). Copy kept in Nexus/styles. Only the Settings page needs it; the pages that
+   wear a style get <html data-style> from Swift (FleetStyles.wear) and need only the CSS half.
+   FleetStyles.picker(box, styles, current, onPick)   draws the Style cards (radios, name=uiStyle) into box the first
+       time and ticks `current` every time; styles = [{ id, name, blurb }] from the app (FleetStyles.list in Swift).
+       onPick(id) runs when the user picks one: post it to the app the way the page posts its other settings.
+   FleetStyles.picked(box)   the ticked style's id */
+window.FleetStyles = window.FleetStyles || (function () {
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text) e.textContent = text; return e; };
+  function picker(box, styles, current, onPick) {
+    if (!box) return;
+    box.classList.add("st-grid");
+    if (!box.childElementCount) {
+      for (const { id, name, blurb } of styles || []) {
+        const input = el("input"); input.type = "radio"; input.name = "uiStyle"; input.value = id;
+        input.addEventListener("change", e => { e.stopPropagation(); if (input.checked && onPick) onPick(id); });
+        const pv = el("div", "st-pv st-" + id), card = el("b", "c");
+        card.append(el("i"), el("i"));
+        pv.append(el("b", "h"), card, el("b", "k"), el("b", "p"));
+        const label = el("label"); label.title = blurb || "";
+        label.append(input, pv, el("span", "st-n", name), el("span", "st-d", blurb));
+        box.append(label);
+      }
+    }
+    for (const i of box.querySelectorAll("input[name=uiStyle]")) i.checked = i.value === current;
+  }
+  const picked = box => ((box || document).querySelector("input[name=uiStyle]:checked") || {}).value;
+  return { picker, picked };
+})();
+/* fleet-styles:end js */
+
+// Style: the design this window wears (the main process puts it on <html data-style>).
+function renderStyle() {
+  window.FleetStyles.picker($('styles'), state.styles, state.settings.uiStyle, (id) => save({ uiStyle: id }));
+  $('style-fleet').hidden = !state.styleFleet;
+}
+
 function renderToday() {
   const s = state.settings;
   const count = s.log.count;
@@ -97,6 +134,7 @@ function renderAll() {
   $('goal').value = s.dailyGoal;
   $('sound').checked = s.sound;
   renderPreview();
+  renderStyle();
 }
 
 let toastTimer;
@@ -322,6 +360,7 @@ $('use-face').onclick = async () => {
 window.api.onState((s) => {
   state = s;
   renderToday();
+  renderStyle(); // a pick made in the common settings
 });
 
 (async () => {
